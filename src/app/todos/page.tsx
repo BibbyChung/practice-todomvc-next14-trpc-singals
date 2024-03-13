@@ -1,4 +1,3 @@
-import * as React from 'react';
 import TodoApp from '~/components/react-todos/app';
 
 export interface IAppProps {

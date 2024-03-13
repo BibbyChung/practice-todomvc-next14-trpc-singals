@@ -1,59 +1,34 @@
 'use client';
 
-import { useSignals } from "@preact/signals-react/runtime";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { delay, filter, map, switchMap, take, tap } from "rxjs";
-import { toSignal, useSubject } from "~/utils/common/rxjs-interop-react";
-import { getTodos, refreshTodos, setAllTodosCompleted } from "~/utils/services/todolist.service";
+import { useEffect } from "react";
+import { useTodosStore } from "~/utils/services/todolist.service";
 import AddItem from "./addItem";
 import Footer from "./footer";
 import Item from "./item";
 
-// let isCompleted = false;
-
 export default function TodoList() {
-  useSignals();
-  // const checkboxToggleRef = useRef<HTMLInputElement>(null);
-  const [isCompleted, setIsCompleted] = useState(false);
-  const isReady$ = useSubject<boolean>();
-  const checkSelectAllBtn$ = useSubject<boolean>();
-  const todosSig = toSignal(getTodos());
 
-  // console.log(isCompleted);
+  const store = useTodosStore();
+  const setAllTodosCompleted = (isC: boolean) => store.setAllTodosCompleted(isC).then(() => store.fetchTodos());
 
   useEffect(() => {
-
-    const toggleCheckboxSub = isReady$.pipe(
-      filter(a => a),
-      switchMap(() => getTodos()),
-      map((todos) => {
-        const total = todos.length;
-        const selectedCount = todos.filter((a) => a.completed).length;
-        if (total === 0) {
-          return false;
-        }
-        return total === selectedCount;
-      }),
-      tap((isSelected) => {
-        if (document) {
-          const elem = document.querySelector('#toggle-all') as HTMLInputElement;
-          elem.checked = isSelected;
-        }
-      })
-    ).subscribe();
-
-    const checkSelectAllSub = checkSelectAllBtn$.pipe(
-      switchMap((isC) => setAllTodosCompleted(isC)),
-      tap(() => refreshTodos())
-    ).subscribe();
-
-    isReady$.next(true);
-
-    return () => {
-      toggleCheckboxSub.unsubscribe();
-      checkSelectAllSub.unsubscribe();
-    };
+    store.fetchTodos();
   }, []);
+
+  useEffect(() => {
+    const todos = store.todos
+    let isSelected = todos.length === todos.filter((a) => a.completed).length;
+    if (todos.length === 0) {
+      isSelected = false;
+    }
+
+    if (document) {
+      const elem = document.querySelector('#toggle-all') as HTMLInputElement;
+      if (elem) {
+        elem.checked = isSelected;
+      }
+    }
+  }, [store.todos])
 
   return (
     <section className="todoapp">
@@ -64,14 +39,14 @@ export default function TodoList() {
           className="toggle-all"
           type="checkbox"
           onChange={(e) => {
-            setIsCompleted(e.currentTarget.checked)
-            checkSelectAllBtn$.next(e.currentTarget.checked);
+            setAllTodosCompleted(e.currentTarget.checked)
+            // checkSelectAllBtn$.next(e.currentTarget.checked);
             // e.preventDefault();
           }}
         />
         <label htmlFor="toggle-all">Mark all as complete</label>
         <ul className="todo-list">
-          {todosSig.value?.map((item, i) => (
+          {store.todos.map((item, i) => (
             <Item key={item.id} {...item} />
           ))}
         </ul>

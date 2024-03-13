@@ -1,35 +1,17 @@
 'use client';
 
-import { useEffect } from "react";
-import { switchMap, tap } from "rxjs";
-import { useSubject } from "~/utils/common/rxjs-interop-react";
-import { delTodo, updateTodo, type todoType, refreshTodos } from "~/utils/services/todolist.service";
+import { useTodosStore, type todoType } from "~/utils/services/todolist.service";
 
 export default function Item(params: todoType) {
-  const destroyBtn$ = useSubject<boolean>();
-  const updateItemBtn$ = useSubject<boolean>();
+  const store = useTodosStore();
+  const updateItem = (checked: boolean) => {
+    store.updateTodo({
+      ...params,
+      completed: checked
+    }).then(() => store.fetchTodos())
+  }
 
-  useEffect(() => {
-    const destroySub = destroyBtn$
-      .pipe(
-        switchMap(() => delTodo(params.id)),
-        tap(() => refreshTodos())
-      ).subscribe();
-
-    const updateItemSub = updateItemBtn$.pipe(
-      switchMap((isChecked) => {
-        const newObj = JSON.parse(JSON.stringify(params)) as todoType;
-        newObj.completed = isChecked;
-        return updateTodo(newObj);
-      }),
-      tap(() => refreshTodos())
-    ).subscribe();
-
-    return () => {
-      destroySub.unsubscribe();
-      updateItemSub.unsubscribe();
-    };
-  }, []);
+  const deleteItem = () => store.delTodo(params.id).then(() => store.fetchTodos())
 
   return (
     <li className={params.completed ? "completed" : ""}>
@@ -39,13 +21,13 @@ export default function Item(params: todoType) {
           type="checkbox"
           checked={params.completed}
           onChange={(e) => {
-            updateItemBtn$.next(e.target.checked);
+            updateItem(e.target.checked);
           }}
         />
         <label>{params.title}</label>
         <button
           onClick={(e) => {
-            destroyBtn$.next(true);
+            deleteItem()
             e.preventDefault();
           }}
           className="destroy"
