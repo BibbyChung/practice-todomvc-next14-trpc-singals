@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect } from "react";
 import { switchMap, tap } from "rxjs";
 import { useSubject } from "~/utils/common/rxjs-interop-react";

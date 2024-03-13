@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, useRef } from "react";
 import { EMPTY, switchMap, tap } from "rxjs";
 import { useSubject } from "~/utils/common/rxjs-interop-react";

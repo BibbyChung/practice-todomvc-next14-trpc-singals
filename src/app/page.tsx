@@ -1,9 +1,5 @@
-import { Inter } from "next/font/google";
-import Link from "next/link";
-import { useEffect, useState } from "react";
-
-const inter = Inter({ subsets: ["latin"] });
-
+'use client'
+import { useState, useEffect } from "react";
 import { trpc } from '~/utils/trpc';
 
 const func = async () => {
@@ -11,7 +7,7 @@ const func = async () => {
   return { result0 }
 }
 
-export default function Home() {
+export default function Page() {
   const [msg, setMsg] = useState<string>();
 
   useEffect(() => {
@@ -22,6 +18,5 @@ export default function Home() {
     <>
       <h1>{msg}</h1>
     </>
-  )
-
+  );
 }

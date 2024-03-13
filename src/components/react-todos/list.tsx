@@ -1,13 +1,13 @@
+'use client';
+
 import { useSignals } from "@preact/signals-react/runtime";
-import { useEffect, useRef, useState } from "react";
-import { filter, map, switchMap, take, tap } from "rxjs";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { delay, filter, map, switchMap, take, tap } from "rxjs";
 import { toSignal, useSubject } from "~/utils/common/rxjs-interop-react";
 import { getTodos, refreshTodos, setAllTodosCompleted } from "~/utils/services/todolist.service";
 import AddItem from "./addItem";
 import Footer from "./footer";
 import Item from "./item";
-
-
 
 // let isCompleted = false;
 
@@ -58,7 +58,6 @@ export default function TodoList() {
   return (
     <section className="todoapp">
       <AddItem />
-
       <section className="main">
         <input
           id="toggle-all"

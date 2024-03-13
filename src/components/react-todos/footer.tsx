@@ -1,6 +1,8 @@
+'use client';
+
 import { useSignals } from "@preact/signals-react/runtime";
 import { useEffect } from "react";
-import { map, switchMap, tap } from "rxjs";
+import { map, startWith, switchMap, tap } from "rxjs";
 import { toSignal, useSubject } from "~/utils/common/rxjs-interop-react";
 import { getTodos, getTodosFilter, refreshTodos, removeAllTodosCompleted, setTodosFilter, type todosFilterType } from "~/utils/services/todolist.service";
 
@@ -19,7 +21,8 @@ export default function Footer() {
 
   const uncompletedCountSig = toSignal(
     getTodos().pipe(
-      map((todos) => todos.filter((a) => !a.completed).length)
+      map((todos) => todos.filter((a) => !a.completed).length),
+      startWith(0)
     )
   );
 
@@ -28,7 +31,7 @@ export default function Footer() {
   useEffect(() => {
     const removeAllTodosSub = removeAllTodosBtn$.pipe(
       switchMap(() => removeAllTodosCompleted()),
-      tap(()=> refreshTodos())
+      tap(() => refreshTodos())
     ).subscribe();
 
     const setTodosFilterSub = setTodosFilterBtn$.pipe(
@@ -91,10 +94,10 @@ export default function Footer() {
             >
               Clear completed
             </button>
-            )
+          )
           : (
-              ""
-            )}
+            ""
+          )}
       </div>
     </footer>
   );
